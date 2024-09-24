@@ -1,0 +1,27 @@
+
+.customCalendario {
+    border: 1px solid #e2e2e2;
+    border-radius: 5px;
+    margin: 2px;
+    text-align: center;
+    cursor: pointer;
+}
+
+.customCalendario:hover {
+    background-color: var(--purple);
+    color: white;
+}
+
+.fontPurple {
+    color: var(--purple);
+}
+
+.buttonCalendar {
+    border: 1px solid var(--purple);
+    color: var(--purple);
+}
+
+.buttonCalendar:hover {
+    background-color: var(--purple);
+    color: white;
+}

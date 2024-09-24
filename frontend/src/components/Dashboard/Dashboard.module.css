@@ -1,0 +1,111 @@
+.textoArea {
+    background-color: #f8f9fa;
+    overflow: hidden; 
+    resize:none;
+    width: 40rem;
+    border: none;
+  }
+  
+  .textoArea:focus {
+    outline: none;
+    background-color: #f8f9fa;
+  }
+  
+  .menu {
+    padding-left: 20rem;
+  }
+  
+  .buttonPurple {
+    background-color: var(--purple);
+    border-radius: 10px;
+    color: var(--white);
+    border: none;
+    padding: 0.5rem;
+}
+
+.sideBarLeft {
+  position: sticky; 
+  top: 0;
+}
+
+.customPost {
+  border: 1px solid; 
+  border-radius: 5px; 
+  padding: 1rem;
+  border-color: #ddd;
+  margin-bottom: 2rem;
+}
+
+.breakLines {
+  font-size: 0.85rem;
+  margin-left: 0.5rem;
+  margin-bottom: 5px;
+}
+
+.customComments {
+  background-color: #f8f9fa;
+  padding: 1rem;
+  border-radius: 5px;
+  margin-bottom: 1rem;
+}
+
+.commentName {
+  font-weight: bold;
+  font-size: 0.9rem;
+  margin-left: 1rem;
+}
+
+@media screen and (max-width: 767px) {
+  .textoArea {
+    background-color: #f8f9fa;
+    overflow: hidden; 
+    resize:none;
+    width: 20rem;
+    border: none;
+  }
+  .sideBarLeft {
+    margin-top: 1rem;
+    margin-bottom: -1rem;
+    margin-left: -3rem;
+  }
+  .menu {
+    padding-left: 1rem;
+  }
+}
+
+/*notificações*/
+.notification-dropdown {
+  position: absolute;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  z-index: 9999; /* Ajuste conforme necessário */
+}
+
+.notification-content {
+  padding: 10px;
+}
+
+.notification-content ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+.notification-content li {
+  margin-bottom: 5px;
+}
+
+.close-button {
+  width: 100%;
+  padding: 5px 10px;
+  background-color: #f0f0f0;
+  border: none;
+  border-top: 1px solid #ccc;
+  border-radius: 0 0 5px 5px;
+  cursor: pointer;
+}
+
+.close-button:hover {
+  background-color: #e0e0e0;
+}
