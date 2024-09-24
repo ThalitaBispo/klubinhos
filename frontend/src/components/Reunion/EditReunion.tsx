@@ -1,4 +1,4 @@
-import { useParams, useNavigate, useLocation } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect } from 'react';
 import axios from "axios";
 import { FormEvent } from '../types';
@@ -15,7 +15,6 @@ interface Reunion {
 
 export function EditReunion() {
     const navigate = useNavigate();
-    const location = useLocation();
     const { id } = useParams();
     const [editReuniao, setEditReuniao] = useState<Reunion>({});
     const [, setStatus] = useState('');
