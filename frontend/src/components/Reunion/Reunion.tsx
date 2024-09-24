@@ -4,7 +4,7 @@ import axios from "axios";
 import Cookies from 'js-cookie';
 import styles from './Reunion.module.css';
 
-import ptBR from 'date-fns/locale/pt-BR';
+import { ptBR } from 'date-fns/locale/pt-BR';
 import { format, addDays } from 'date-fns';
 
 interface Reunion {
