@@ -18,7 +18,7 @@ interface UserProfile {
 
 export function EditProfile() {
     const [editProfile, setEditProfile] = useState<UserProfile | null>(null);
-    const [status, setStatus] = useState('');
+    const [, setStatus] = useState('');
     const [selectedImagePreview, setSelectedImagePreview] = useState(logo);
     const [bannerImagePreview, setBannerImagePreview] = useState('');
     const [selectedImage, setSelectedImage] = useState<File | null>(null);

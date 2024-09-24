@@ -24,15 +24,8 @@ interface Clube {
     name: string;
 }
 
-interface Notification {
-    id: number;
-    message: string;
-    date: string;
-}
-
 export function RoutesDashboard() {
     const [nameClub, setNameClub] = useState<Clube>({ name: '' });
-    //const [, setNotifications] = useState<Notification[]>([]);
     const [showNotifications, setShowNotifications] = useState(false);
     const club_id = Cookies.get('club_id');
     
@@ -44,8 +37,6 @@ export function RoutesDashboard() {
             try {
                 const clubResponse = await axios.get(`http://localhost:8000/api/club/getClubById/${club_id}`);
                 setNameClub(clubResponse.data[0]);
-                //const notificationsResponse = await axios.get(`http://localhost:8000/api/notifications/${club_id}`);
-                //setNotifications(notificationsResponse.data);
             } catch (error) {
                 console.error(error);
             }

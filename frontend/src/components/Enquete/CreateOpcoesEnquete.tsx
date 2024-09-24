@@ -3,10 +3,16 @@ import { Link, useNavigate } from "react-router-dom"; // Adicione a importação
 import Cookies from 'js-cookie';
 import axios from "axios";
 
+// Definindo o tipo para a opção
+interface Option {
+  titulo: string;
+  description: string;
+}
+
 export function AdicionarOpcoesEnquete() {
-  const [options, setOptions] = useState([{ titulo: '', description: '' }]);
-  const [lastEnqueteId, setLastEnqueteId] = useState(null);
-  const navigate = useNavigate(); // Agora useNavigate está definido corretamente
+  const [options, setOptions] = useState<Option[]>([{ titulo: '', description: '' }]); // Tipagem de options
+  const [, setLastEnqueteId] = useState<number | null>(null); // Tipagem de setLastEnqueteId
+  const navigate = useNavigate();
   const club_id = Cookies.get('club_id');
 
   useEffect(() => {
@@ -14,13 +20,13 @@ export function AdicionarOpcoesEnquete() {
       try {
         const response = await axios.get(`http://127.0.0.1:8000/api/enquete/getAllEnquetesByClub/${club_id}`);
         const enquetes = response.data;
-        console.log('Enquetes data:', enquetes); // Log para depuração
+        console.log('Enquetes data:', enquetes);
 
         if (enquetes.length > 0) {
           const lastEnquete = enquetes[enquetes.length - 1];
           const lastEnqueteId = lastEnquete.id;
           Cookies.set('last_enquete_id', lastEnqueteId, { expires: 7 });
-          setLastEnqueteId(lastEnqueteId); // Armazena o ID da última enquete no estado local
+          setLastEnqueteId(lastEnqueteId);
         }
       } catch (error) {
         console.error('Erro ao buscar enquetes:', error);
@@ -34,13 +40,13 @@ export function AdicionarOpcoesEnquete() {
     setOptions([...options, { titulo: '', description: '' }]);
   };
 
-  const handleRemoveOption = (index) => {
+  const handleRemoveOption = (index: number) => {
     const updatedOptions = [...options];
     updatedOptions.splice(index, 1);
     setOptions(updatedOptions);
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     try {
@@ -52,7 +58,7 @@ export function AdicionarOpcoesEnquete() {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'enquete_id': enqueteId, // Enviar o ID da enquete no cabeçalho da requisição
+            'enquete_id': enqueteId || '', // Enviar o ID da enquete no cabeçalho da requisição
           },
           body: JSON.stringify({
             enquete_id: enqueteId,

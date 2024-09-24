@@ -3,24 +3,30 @@ import axios from "axios";
 import Cookies from 'js-cookie';
 import styles from './Enquete.module.css';
 
+// Definindo a interface para os dados da enquete
+interface EnqueteData {
+    id: number;
+    titulo: string;
+    description: string;
+}
+
 export function Enquete() {
-    const [enquete, setEnquete] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [votes, setVotes] = useState({}); // Estado para armazenar os votos
-    const [userVoted, setUserVoted] = useState(false); // Estado para rastrear se o usuário já votou
+    const [enquete, setEnquete] = useState<EnqueteData[]>([]); // Tipagem da enquete
+    const [, setLoading] = useState<boolean>(true); // Tipagem de setLoading
+    const [votes, setVotes] = useState<Record<number, number>>({}); // Estado para armazenar os votos
+    const [userVoted, setUserVoted] = useState<boolean>(false); // Estado para rastrear se o usuário já votou
     const club_id = Cookies.get('club_id');
-    const user_id = Cookies.get('user_id'); // Supondo que você tenha um ID de usuário nos cookies
     const last_enquete_id = Cookies.get('last_enquete_id');
 
     useEffect(() => {
         async function fetchEnquete() {
             try {
-                const response = await axios.get(`http://127.0.0.1:8000/api/enquete/getOpcoes/${last_enquete_id}`);
+                const response = await axios.get<EnqueteData[]>(`http://127.0.0.1:8000/api/enquete/getOpcoes/${last_enquete_id}`);
                 const enquetesData = response.data;
                 setEnquete(enquetesData);
                 
                 // Inicializar os votos com zero
-                const initialVotes = {};
+                const initialVotes: Record<number, number> = {};
                 enquetesData.forEach(enquete => {
                     initialVotes[enquete.id] = 0;
                 });
@@ -35,11 +41,11 @@ export function Enquete() {
         fetchEnquete();
     }, [club_id]);
 
-    const handleVote = (id) => {
+    const handleVote = (id: number) => {
         if (!userVoted) {
             setVotes(prevVotes => ({
                 ...prevVotes,
-                [id]: prevVotes[id] + 1
+                [id]: (prevVotes[id] || 0) + 1 // Garante que prevVotes[id] não seja undefined
             }));
             setUserVoted(true);
         }
@@ -93,7 +99,7 @@ export function Enquete() {
                     </div>
 
                     <div className="col-md-2">
-                        <span style={{ fontSize: '1.2rem' }}>votos</span>
+                        <span style={{ fontSize: '1.2rem' }}>Votos</span>
                     </div>
                 </div>
             </div>        
@@ -102,7 +108,7 @@ export function Enquete() {
                 <div key={enquetes.id} className={`nav-link list-group-flush ${styles.customVotos}`}>
                     <div className="d-flex mt-2 mb-2 align-items-center">
                         <div className={`col-md-6 d-flex flex-column ${styles.customTitle}`}>
-                            <span>{enquetes.title}</span>
+                            <span>{enquetes.titulo}</span>
                             <span style={{ color: '#5b6b77' }}>{enquetes.titulo}</span>
                         </div>
 

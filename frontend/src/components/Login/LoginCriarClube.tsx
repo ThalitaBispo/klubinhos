@@ -4,22 +4,26 @@ import axios from 'axios';
 import Cookies from 'js-cookie';
 import styles from './Login.module.css';
 
+interface CadastroState {
+  name: string;
+  nick_club: string;
+}
+
 export function LoginCriarClube() {
+  const [cadastro, setCadastro] = useState<CadastroState>({
+    name: '',
+    nick_club: '',
+  });
+  
+  const [, setStatus] = useState<string>('');
+  const navigate = useNavigate();
 
-    const [cadastro, setCadastro] = useState({
-        name: '', // Valor padrão para 'name'
-        nick_club: '', // Valor padrão para 'nick_club'
-    });
-    const [status, setStatus] = useState('');
-    const navigate = useNavigate();
+  // Recupere o id do usuário do cookie
+  const user_id = Cookies.get('user_id');
+  console.log('ID do usuário:', user_id);
 
-    // Recupere o id do usuário do cookie
-    
-    const user_id = Cookies.get('user_id');
-    console.log('ID do usuário:', user_id);
-
-    async function gravar(e) {
-        e.preventDefault();
+  async function gravar(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
 
     const config = {
       headers: {
@@ -33,7 +37,7 @@ export function LoginCriarClube() {
         {
           name: cadastro.name,
           nick_club: cadastro.nick_club,
-          user_id: user_id, // Adicione o userId ao corpo da solicitação
+          user_id: user_id, // Adicione o user_id ao corpo da solicitação
         },
         config
       );
@@ -42,7 +46,10 @@ export function LoginCriarClube() {
 
       setStatus('clube criado');
       alert('Clube criado com sucesso!');
-      setCadastro({});
+      setCadastro({
+        name: '',
+        nick_club: '',
+      });
 
       // Redireciona para a página desejada
       navigate('/');
@@ -52,46 +59,49 @@ export function LoginCriarClube() {
     }
   }
 
-    return(
-        <>
-            <div className={styles.welcome}>
-                    <p>
-                        <span>Bem-vindo(a) </span>
-                    </p>
+  return (
+    <>
+      <div className={styles.welcome}>
+        <p>
+          <span>Bem-vindo(a) </span>
+        </p>
+      </div>
 
-                </div>
+      <p className={styles.textLogin}>Crie um Clube</p>
 
-                <p className={styles.textLogin}>Crie um Clube</p>
+      <form onSubmit={gravar} className={styles.loginForm}>
+        <div className="form-group">
+          <label htmlFor="clubeInput">Nome do Clube</label>
+          <input
+            type="text"
+            id="clubeInput"
+            placeholder="Nome do Clube"
+            value={cadastro.name}
+            className="form-control"
+            onChange={(e) => setCadastro({ ...cadastro, name: e.target.value })}
+            required
+          />
+        </div>
 
-                <form onSubmit={gravar} className={styles.loginForm}>
-                    <div className="form-group">
-                        <label htmlFor='clubeInput'>Nome do Clube</label>
-                        <input 
-                            type='text' 
-                            id='clubeInput'
-                            placeholder='Nome do Clube'
-                            value={cadastro.name || ''}
-                            className='form-control'
-                            onChange={(e) => setCadastro({...cadastro, name:e.target.value})}
-                      required/>                        
-                    </div>
-                    <div className="form-group">
-                        <label htmlFor='endClube'>Endereço do Clube</label>
-                        <input 
-                            type='text' 
-                            id='endClube'
-                            placeholder='meuklubinho'
-                            value={cadastro.nick_club || ''}
-                            className='form-control'
-                            onChange={(e) => setCadastro({...cadastro, nick_club:e.target.value})}
-                            required/>                        
-                    </div>
-                    <p><a href='/pesquisarclube'>Buscar Clube Existente</a></p>
-                    
-                    <div className={styles.centerButton}>
-                        <button type="submit" className="btn btn-lg btn-block">Criar Clube</button>
-                    </div>
-                </form>
-        </>
-    )
+        <div className="form-group">
+          <label htmlFor="endClube">Endereço do Clube</label>
+          <input
+            type="text"
+            id="endClube"
+            placeholder="meuklubinho"
+            value={cadastro.nick_club}
+            className="form-control"
+            onChange={(e) => setCadastro({ ...cadastro, nick_club: e.target.value })}
+            required
+          />
+        </div>
+
+        <p><a href="/pesquisarclube">Buscar Clube Existente</a></p>
+
+        <div className={styles.centerButton}>
+          <button type="submit" className="btn btn-lg btn-block">Criar Clube</button>
+        </div>
+      </form>
+    </>
+  );
 }

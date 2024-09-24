@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Cookies from 'js-cookie';
-import axios from "axios";
+import axios, { AxiosError } from "axios"; // Importando AxiosError
 
 interface Enquete {
   title?: string;
@@ -53,9 +53,10 @@ export function CreateEnquete() {
       navigate('/adicionar-enquete'); // Navegue para a nova página
 
     } catch (error) {
-      setStatus(`Falha: ${error.message}`);
-      alert(`Falha: ${error.message}`);
-      console.log(error);
+      const axiosError = error as AxiosError; // Asserção de tipo para AxiosError
+      setStatus(`Falha: ${axiosError.message}`);
+      alert(`Falha: ${axiosError.message}`);
+      console.log(axiosError);
     }
   }
 

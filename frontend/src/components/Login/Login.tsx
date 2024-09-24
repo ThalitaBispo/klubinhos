@@ -4,15 +4,20 @@ import { useState } from 'react';
 import axios from 'axios';
 import Cookies from 'js-cookie';
 
+interface LoginState {
+  email: string;
+  password: string;
+}
+
 export function Login() {
   const navigate = useNavigate();
-  const [login, setLogin] = useState({
+  const [login, setLogin] = useState<LoginState>({
     email: '',
-    password: ''
+    password: '',
   });
-  const [, setStatus] = useState('');
+  const [, setStatus] = useState<string>('');
 
-  async function gravar(e) {
+  async function gravar(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
     const config = {
@@ -26,7 +31,7 @@ export function Login() {
         'http://127.0.0.1:8000/api/login',
         {
           email: login.email,
-          password: login.password
+          password: login.password,
         },
         config
       );
@@ -52,15 +57,14 @@ export function Login() {
         navigate('/bemvindo');
       } else {
         setStatus('Login feito com sucesso');
-        setLogin({});
+        setLogin({ email: '', password: '' });
 
-        //Atualiza a pagina para o App.tsx verificar a presença dos cookies
-        window.location.reload()
+        // Atualiza a página para o App.tsx verificar a presença dos cookies
+        window.location.reload();
       }
-
-    } catch (error) {
-      setStatus(`Falha: ${error}`);
-      alert(`Usuário ou senha inválidos.`);
+    } catch (error: any) {
+      setStatus(`Falha: ${error.message}`);
+      alert('Usuário ou senha inválidos.');
     }
   }
 
@@ -74,7 +78,9 @@ export function Login() {
 
         <p>
           <p>Sem conta?</p>
-          <p className={styles.textDestaque}><Link to="/cadastro">Cadastre-se</Link></p>
+          <p className={styles.textDestaque}>
+            <Link to="/cadastro">Cadastre-se</Link>
+          </p>
         </p>
       </div>
 
@@ -82,11 +88,11 @@ export function Login() {
 
       <form onSubmit={gravar} className={styles.loginForm}>
         <div className="form-group">
-          <label htmlFor='emailInput'>Entre com o seu e-mail</label>
+          <label htmlFor="emailInput">Entre com o seu e-mail</label>
           <input
-            type='text'
-            id='emailInput'
-            placeholder='e-mail'
+            type="text"
+            id="emailInput"
+            placeholder="e-mail"
             value={login.email}
             className="form-control"
             onChange={(e) => setLogin({ ...login, email: e.target.value })}
@@ -95,23 +101,24 @@ export function Login() {
         </div>
 
         <div className="form-group">
-          <label htmlFor='passInput'>Entre com a sua senha</label>
+          <label htmlFor="passInput">Entre com a sua senha</label>
           <input
-            type='password'
-            id='passInput'
-            placeholder='senha'
+            type="password"
+            id="passInput"
+            placeholder="senha"
             value={login.password}
             className="form-control"
             onChange={(e) => setLogin({ ...login, password: e.target.value })}
             required
           />
         </div>
-        <p><a>Esqueceu a senha?</a></p>
+        <p><a href="#">Esqueceu a senha?</a></p>
 
         <div className={styles.centerButton}>
-          <button type='submit' className="btn btn-lg btn-block">Entrar</button>
+          <button type="submit" className="btn btn-lg btn-block">
+            Entrar
+          </button>
         </div>
-
       </form>
     </>
   );

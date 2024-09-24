@@ -31,7 +31,6 @@ export function Dashboard() {
   const [comments, setComments] = useState({});
 
   const [, setLikedPosts] = useState<{ post_id: number; liked: boolean }[]>([]);
-  //const [likesCount, setLikesCount] = useState<LikeCount>({});
 
   const user_id = Cookies.get('user_id');
   const club_id = Cookies.get('club_id');
@@ -47,9 +46,15 @@ export function Dashboard() {
     fetchPostagens();
   }, []);
 
+  // Configurar o axiosRetry com verificação de erro adequada
   axiosRetry(axios, {
     retries: 3, // Número máximo de tentativas de reenvio
-    retryCondition: (error) => axiosRetry.isNetworkOrIdempotentRequestError(error) || error.response.status === 429, // Condição para reenviar a requisição
+    retryCondition: (error) => {
+      return (
+        axiosRetry.isNetworkOrIdempotentRequestError(error) ||
+        (error.response && error.response.status === 429) // Verifica se error.response existe
+      );
+    },
   });
 
   const fetchPostagens = async () => {
@@ -61,11 +66,9 @@ export function Dashboard() {
       const likedPostsData = response.data.map((post) => ({ post_id: post.id, liked: post.liked }));
       setLikedPosts(likedPostsData);
 
-      // Buscar os comentários para cada postagem
       const postIdArray = response.data.map((post) => post.id);
       const commentsArray = await Promise.all(postIdArray.map((postId) => fetchComments(postId)));
       
-      // Associar os comentários às postagens
       const commentsObject = {};
       postIdArray.forEach((postId, index) => {
         commentsObject[postId] = commentsArray[index];
@@ -76,8 +79,6 @@ export function Dashboard() {
     } catch (error) {
       console.error(error);
     }
-
-   //countLikes();
   };
 
   async function gravar(e: FormEvent) {
@@ -106,52 +107,6 @@ export function Dashboard() {
     }
   }
 
-  //curtidas
-  /*const handleLike = async (postId: number) => {
-    try {
-      const index = likedPosts.findIndex((post) => post.post_id === postId);
-      let liked = false;
-
-      if (index !== -1) {
-        liked = !likedPosts[index].liked;
-        likedPosts[index].liked = liked;
-        setLikedPosts([...likedPosts]);
-      }
-
-      await axios.post(
-        `http://127.0.0.1:8000/api/like/create/${postId}`,
-        {
-          user_id: user_id,
-          post_id: postId,
-          liked: liked,
-        },
-        config
-      );
-    } catch (error) {
-      console.error(postId);
-      console.error(error);
-    }
-  };*/
-
-  // Adicione uma função para contar curtidas
-  /*const countLikes = async () => {
-    try {
-      const likesCounts = await Promise.all(postagens.map(async (post) => {
-        const response = await axios.get(`http://127.0.0.1:8000/api/like/countLikes/${post.id}`);
-        return { postId: post.id, likes: response.data };
-      }));
-
-      const likesCountObject = {};
-      likesCounts.forEach((likesCount) => {
-        likesCountObject[likesCount.postId] = likesCount.likes;
-      });
-      setLikesCount(likesCountObject);
-    } catch (error) {
-      console.error(error);
-    }
-  };*/
-
-  //comentarios
   const gravarComment = async (e: FormEvent, postId: number) => {
     e.preventDefault();
     const post = postagens.find(post => post.id === postId);
@@ -163,12 +118,11 @@ export function Dashboard() {
         {
           user_id: user_id,
           post_id: postId,
-          content: post.commentText, // Usar o texto do comentário correspondente à postagem
+          content: post.commentText,
         },
         config
       );
 
-      // Lógica para atualizar os comentários...
       const updatedComments = await fetchComments(postId);
 
       setComments(prevComments => ({
@@ -176,7 +130,6 @@ export function Dashboard() {
         [postId]: updatedComments,
       }));
 
-      // Limpar o texto do comentário após o envio
       handleCommentChange(postId, '');
     } catch (error) {
       setStatus(`Falha ao adicionar comentário: ${error}`);
@@ -184,7 +137,7 @@ export function Dashboard() {
     }
   };
 
-  const handleCommentChange = (postId?: number, value?: string) => {
+  const handleCommentChange = (postId: number, value?: string) => {
     setPostagens(postagens.map(post => {
       if (post.id === postId) {
         return { ...post, commentText: value };
@@ -193,7 +146,7 @@ export function Dashboard() {
     }));
   };
 
-  const fetchComments = async (postId?: number) => {
+  const fetchComments = async (postId: number) => {
     try {
       const response = await axios.get(`http://127.0.0.1:8000/api/comment/getAllCommentsByPost/${postId}`);
       return response.data;
@@ -203,14 +156,13 @@ export function Dashboard() {
     }
   };
 
-  const toggleComments = (postId?: number) => {
+  const toggleComments = (postId: number) => {
     setShowComments((prevState) => ({
       ...prevState,
       [postId]: !prevState[postId],
     }));
   };
 
-  //textarea
   const quebrarLinhas = (texto: string, limite: number) => {
     const h = new Hypher(pt);
 
@@ -235,16 +187,14 @@ export function Dashboard() {
   };
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    // Verificar se o target é um HTMLTextAreaElement
-  if (e.target instanceof HTMLTextAreaElement) {
-    // Atualizar apenas o estado correspondente ao textarea em que está sendo digitado
-    if (e.target.name === 'content') {
-      setText(e.target.value);
-    } else if (e.target.name === 'comment') {
-      setCommentText(e.target.value);
+    if (e.target instanceof HTMLTextAreaElement) {
+      if (e.target.name === 'content') {
+        setText(e.target.value);
+      } else if (e.target.name === 'comment') {
+        setCommentText(e.target.value);
+      }
+      autoExpand(e.target);
     }
-    autoExpand(e.target);
-  }
   };
 
   const autoExpand = (textarea: HTMLTextAreaElement) => {
