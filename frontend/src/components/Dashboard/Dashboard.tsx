@@ -1,40 +1,40 @@
 import { useState, useEffect, ChangeEvent } from 'react';
 import axios from 'axios';
+import { AxiosError } from 'axios';
 import axiosRetry from 'axios-retry';
 import Cookies from 'js-cookie';
 import logo from '../../avatar/logo.jpeg';
-import Hypher from 'hypher';
-import pt from 'hyphenation.pt';
 
 import { FormEvent } from '../types';
 import styles from './Dashboard.module.css';
 
 interface Post {
-  id?: number;
+  id: number; // Tornar id obrigatório
   name?: string;
   last_name?: string;
   content?: string;
   commentText?: string;
   liked?: boolean;
+  imagem?: string;
+  user_id?: number;
+}
+
+function setLikedPosts(_likedPostsData: any) {
+  throw new Error('Function not implemented.');
 }
 
 export function Dashboard() {
-  const [postagem, setPostagem] = useState<Post>({ content: '' });
+  const [postagem, setPostagem] = useState<Post>({ id: 0, content: '' }); // Inicialize com id
   const [postagens, setPostagens] = useState<Post[]>([]);
   const [loadingPostagens, setLoadingPostagens] = useState<boolean>(false);
-
   const [, setStatus] = useState<string>('');
   const [text, setText] = useState<string>('');
-
   const [showComments, setShowComments] = useState<{ [postId: number]: boolean }>({});
-  const [, setCommentText] = useState<string>('');
-  const [comments, setComments] = useState({});
-
-  const [, setLikedPosts] = useState<{ post_id: number; liked: boolean }[]>([]);
+  const [commentText, setCommentText] = useState<{ [postId: number]: string }>({}); // Alterar para um objeto
+  const [comments, setComments] = useState<{ [postId: number]: any[] }>({});
 
   const user_id = Cookies.get('user_id');
   const club_id = Cookies.get('club_id');
-  const role = Cookies.get('role');
 
   const config = {
     headers: {
@@ -46,13 +46,12 @@ export function Dashboard() {
     fetchPostagens();
   }, []);
 
-  // Configurar o axiosRetry com verificação de erro adequada
   axiosRetry(axios, {
-    retries: 3, // Número máximo de tentativas de reenvio
-    retryCondition: (error) => {
+    retries: 3,
+    retryCondition: (error: AxiosError) => {
       return (
         axiosRetry.isNetworkOrIdempotentRequestError(error) ||
-        (error.response && error.response.status === 429) // Verifica se error.response existe
+        (error.response ? error.response.status === 429 : false)
       );
     },
   });
@@ -63,16 +62,16 @@ export function Dashboard() {
       setPostagens(response.data);
       setLoadingPostagens(false);
 
-      const likedPostsData = response.data.map((post) => ({ post_id: post.id, liked: post.liked }));
+      const likedPostsData = response.data.map((post: Post) => ({ post_id: post.id, liked: post.liked }));
       setLikedPosts(likedPostsData);
 
-      const postIdArray = response.data.map((post) => post.id);
-      const commentsArray = await Promise.all(postIdArray.map((postId) => fetchComments(postId)));
-      
-      const commentsObject = {};
-      postIdArray.forEach((postId, index) => {
-        commentsObject[postId] = commentsArray[index];
-      });
+      const postIdArray = response.data.map((post: Post) => post.id);
+      const commentsArray = await Promise.all(postIdArray.map((postId: number) => fetchComments(postId)));
+
+      const commentsObject: { [key: number]: any[] } = {};
+        postIdArray.forEach((postId: number, index: number) => {
+          commentsObject[postId] = commentsArray[index];
+        });
       setComments(commentsObject);
 
       setLoadingPostagens(false);
@@ -88,17 +87,16 @@ export function Dashboard() {
       await axios.post(
         'http://127.0.0.1:8000/api/post/create',
         {
-          club_id: club_id,
-          user_id: user_id,
+          club_id,
+          user_id,
           content: postagem.content,
         },
         config
       );
 
       setStatus('Post cadastrado com sucesso!');
-      setPostagem({ content: '' });
+      setPostagem({ id: 0, content: '' }); // Resetar com id
       setText('');
-
       fetchPostagens();
       setTimeout(fetchPostagens, 1000);
     } catch (error) {
@@ -116,33 +114,30 @@ export function Dashboard() {
       await axios.post(
         'http://127.0.0.1:8000/api/comment/create',
         {
-          user_id: user_id,
+          user_id,
           post_id: postId,
-          content: post.commentText,
+          content: commentText[postId] || '', // Usar commentText do estado
         },
         config
       );
 
       const updatedComments = await fetchComments(postId);
-
       setComments(prevComments => ({
         ...prevComments,
         [postId]: updatedComments,
       }));
 
-      handleCommentChange(postId, '');
+      handleCommentChange(postId, ''); // Resetar o texto do comentário
     } catch (error) {
       setStatus(`Falha ao adicionar comentário: ${error}`);
       console.error(error);
     }
   };
 
-  const handleCommentChange = (postId: number, value?: string) => {
-    setPostagens(postagens.map(post => {
-      if (post.id === postId) {
-        return { ...post, commentText: value };
-      }
-      return post;
+  const handleCommentChange = (postId: number, value: string) => {
+    setCommentText(prev => ({
+      ...prev,
+      [postId]: value, // Atualizar o texto do comentário para o post específico
     }));
   };
 
@@ -163,39 +158,25 @@ export function Dashboard() {
     }));
   };
 
-  const quebrarLinhas = (texto: string, limite: number) => {
-    const h = new Hypher(pt);
-
-    const palavras = texto.split(/\s+/);
-    const linhas = [];
-    let linhaAtual = '';
-
-    palavras.forEach((palavra) => {
-      if (linhaAtual.length + palavra.length <= limite) {
-        linhaAtual += `${palavra} `;
-      } else {
-        linhas.push(linhaAtual.trim());
-        linhaAtual = `${palavra} `;
-      }
-    });
-
-    linhas.push(linhaAtual.trim());
-
-    const linhasHyphenated = linhas.map((linha) => h.hyphenate(linha).join('\u00AD'));
-
-    return linhasHyphenated;
-  };
-
   const handleInputChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     if (e.target instanceof HTMLTextAreaElement) {
       if (e.target.name === 'content') {
         setText(e.target.value);
       } else if (e.target.name === 'comment') {
-        setCommentText(e.target.value);
+        const postId = e.target.dataset.postid;
+  
+        // Verifica se postId está definido e é uma string
+        if (postId) {
+          setCommentText(prev => ({
+            ...prev,
+            [postId]: e.target.value, // Usar data-attribute para o postId
+          }));
+        }
       }
       autoExpand(e.target);
     }
   };
+  
 
   const autoExpand = (textarea: HTMLTextAreaElement) => {
     textarea.style.height = 'auto';
@@ -208,7 +189,7 @@ export function Dashboard() {
         <form onSubmit={gravar}>
           <div className="row bg-light p-3">
             <textarea
-              className={`${styles.textoArea}`}
+              className={styles.textoArea}
               placeholder="No que você está pensando?"
               rows={2}
               maxLength={255}
@@ -262,14 +243,7 @@ export function Dashboard() {
               </div>
 
               <div style={{ padding: '0 3rem' }}>
-                {quebrarLinhas(post.content, 255).map((linha, index) => (
-                  <p
-                    key={index}
-                    className={`text-justify ${styles.breakLines}`}
-                  >
-                    {linha}
-                  </p>
-                ))}
+                {post.content && <p className="text-justify">{post.content}</p>}
                 <div
                   style={{
                     display: 'flex',
@@ -291,57 +265,41 @@ export function Dashboard() {
                   {showComments[post.id] && (
                     <>
                       {comments[post.id] && comments[post.id].length > 0 ? (
-                        comments[post.id].map((comment) => (
-                          <div key={comment.id} className={`d-flex ${styles.customComments}`}>
-                            <img
-                              src={
-                                comment.imagem
-                                  ? `http://127.0.0.1:8000/api/user/getImage/${comment.user_id}`
-                                  : logo
-                              }
-                              alt="Imagem do perfil"
-                              className="img-fluid rounded-circle align-self-start"
-                              style={{ width: '2.5rem', height: '2.5rem' }}
-                            />
-                            <div>
-                              <p className={`mt-2 ${styles.commentName}`}>{comment.name} {comment.last_name}</p>
-                              <p className="mt-1">{comment.content}</p>
-                            </div>
-                            <div className="position-relative ml-auto">
-                              <span className="material-symbols-outlined position-absolute" style={{ top: '0', right: '0', left: '20rem', cursor: 'pointer' }}>
-                                more_horiz
-                              </span>
-                            </div>
+                        comments[post.id].map((comment, index) => (
+                          <div className="d-flex" key={index}>
+                            <a href="#" className="nav-link d-flex flex-row">
+                              <img
+                                src={comment.user_id ? `http://127.0.0.1:8000/api/user/getImage/${comment.user_id}` : logo}
+                                alt="Imagem do perfil"
+                                className="img-fluid rounded-circle align-self-start"
+                                style={{ width: '3rem', height: '3rem' }}
+                              />
+                              <div className="mt-2" style={{ marginLeft: '1rem' }}>
+                                <div>
+                                  <span>{comment.content}</span>
+                                </div>
+                              </div>
+                            </a>
                           </div>
                         ))
                       ) : (
-                        <p>Seja o(a) primeiro(a) a comentar esta postagem</p>
+                        <p className="text-muted">Sem comentários</p>
                       )}
 
                       <form onSubmit={(e) => gravarComment(e, post.id)}>
-                        <div className="d-flex" style={{ padding: '1rem' }}>
-                          <img
-                            src={
-                              post.imagem
-                                ? `http://127.0.0.1:8000/api/user/getImage/${user_id}`
-                                : logo
-                            }
-                            alt="Imagem do perfil"
-                            className="img-fluid rounded-circle align-self-start"
-                            style={{ width: '3rem', height: '3rem' }}
-                          />
-                          <textarea
-                            className="form-control"
-                            rows={1}
-                            maxLength={255}
-                            name="comment"
-                            style={{ resize: 'none', marginLeft: '1rem' }}
-                            placeholder="Faça um comentário..."
-                            value={post.commentText || ''}
-                            onChange={(e) => handleCommentChange(post.id, e.target.value)}
-                          />
-                          <button type="submit">Comentar</button>
-                        </div>
+                        <textarea
+                          className={styles.textoArea}
+                          placeholder="Adicionar um comentário..."
+                          rows={2}
+                          maxLength={255}
+                          name="comment"
+                          data-postid={post.id} // Usar data-attribute
+                          value={commentText[post.id] || ''}
+                          onChange={(e) => handleCommentChange(post.id, e.target.value)}
+                        />
+                        <button type="submit" className={styles.buttonPurple}>
+                          Comentar
+                        </button>
                       </form>
                     </>
                   )}
@@ -354,4 +312,3 @@ export function Dashboard() {
     </>
   );
 }
-
