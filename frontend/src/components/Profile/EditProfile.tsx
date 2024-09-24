@@ -5,19 +5,30 @@ import logo from '../../avatar/logo.jpeg';
 import styles from './Profile.module.css';
 import { Link } from 'react-router-dom';
 
+interface UserProfile {
+    id: string; // ou Key, dependendo de como você define isso
+    imagem: string;
+    banner: string;
+    name: string;
+    last_name: string;
+    bio: string;
+    birthday_date: string; // Formato: 'YYYY-MM-DD'
+    phone_number: string;
+}
+
 export function EditProfile() {
-    const [editProfile, setEditProfile] = useState({});
+    const [editProfile, setEditProfile] = useState<UserProfile | null>(null);
     const [status, setStatus] = useState('');
     const [selectedImagePreview, setSelectedImagePreview] = useState(logo);
     const [bannerImagePreview, setBannerImagePreview] = useState('');
-    const [selectedImage, setSelectedImage] = useState(null);
+    const [selectedImage, setSelectedImage] = useState<File | null>(null);
     const user_id = Cookies.get('user_id');
 
     useEffect(() => {
         async function fetchEditProfile() {
             try {
                 const response = await axios.get(`http://localhost:8000/api/user/getUser/${user_id}`);
-                const user = response.data[0];
+                const user: UserProfile = response.data[0];
                 setEditProfile(user);
                 setBannerImagePreview(user.banner ? `http://127.0.0.1:8000/api/user/getBanner/${user_id}` : '');
                 setSelectedImagePreview(user.imagem ? `http://127.0.0.1:8000/api/user/getImage/${user_id}` : logo);
@@ -29,31 +40,33 @@ export function EditProfile() {
         fetchEditProfile();
     }, [user_id]);
 
-    const handleImageChange = (e) => {
-        const file = e.target.files[0];
+    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
         if (file) {
             setSelectedImage(file);
             const reader = new FileReader();
             reader.onloadend = () => {
-                setSelectedImagePreview(reader.result);
+                setSelectedImagePreview(reader.result as string);
             };
             reader.readAsDataURL(file);
         }
     };
 
-    const handleBannerImageChange = (e) => {
-        const file = e.target.files[0];
+    const handleBannerImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
         if (file) {
             const reader = new FileReader();
             reader.onloadend = () => {
-                setBannerImagePreview(reader.result);
+                setBannerImagePreview(reader.result as string);
             };
             reader.readAsDataURL(file);
         }
     };
 
-    const gravar = async (e) => {
+    const gravar = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (!editProfile) return;
+
         try {
             await axios.post(`http://127.0.0.1:8000/api/user/update/${user_id}`, editProfile);
 
@@ -132,8 +145,8 @@ export function EditProfile() {
                                 className="form-control" 
                                 name="name" 
                                 placeholder="Nome"
-                                value={editProfile.name || ''}
-                                onChange={(e) => setEditProfile({ ...editProfile, name: e.target.value })}
+                                value={editProfile?.name || ''}
+                                onChange={(e) => editProfile && setEditProfile({ ...editProfile, name: e.target.value })}
                             />
                         </div>
                         <div className="form-group col-md-6">
@@ -144,8 +157,8 @@ export function EditProfile() {
                                     className="form-control" 
                                     id="inlineFormInputGroupUsername" 
                                     placeholder="Usuário" 
-                                    value={editProfile.last_name || ''}
-                                    onChange={(e) => setEditProfile({ ...editProfile, last_name: e.target.value })}
+                                    value={editProfile?.last_name || ''}
+                                    onChange={(e) => editProfile && setEditProfile({ ...editProfile, last_name: e.target.value })}
                                 />
                             </div>
                         </div>
@@ -158,8 +171,8 @@ export function EditProfile() {
                             className="form-control" 
                             id="inputBio" 
                             placeholder="Bio" 
-                            value={editProfile.bio || ''}
-                            onChange={(e) => setEditProfile({ ...editProfile, bio: e.target.value })}
+                            value={editProfile?.bio || ''}
+                            onChange={(e) => editProfile && setEditProfile({ ...editProfile, bio: e.target.value })}
                         />
                     </div>
 
@@ -171,8 +184,8 @@ export function EditProfile() {
                                 className="form-control" 
                                 id="inputNascimento" 
                                 placeholder="Data de nascimento" 
-                                value={editProfile.birthday_date || ''}
-                                onChange={(e) => setEditProfile({ ...editProfile, birthday_date: e.target.value })}
+                                value={editProfile?.birthday_date || ''}
+                                onChange={(e) => editProfile && setEditProfile({ ...editProfile, birthday_date: e.target.value })}
                             />
                         </div>
                         <div className="form-group col-md-6">
@@ -182,8 +195,8 @@ export function EditProfile() {
                                 className="form-control" 
                                 id="inputTelefone" 
                                 placeholder="Telefone" 
-                                value={editProfile.phone_number || ''}
-                                onChange={(e) => setEditProfile({ ...editProfile, phone_number: e.target.value })}
+                                value={editProfile?.phone_number || ''}
+                                onChange={(e) => editProfile && setEditProfile({ ...editProfile, phone_number: e.target.value })}
                             />
                         </div>
                     </div>
