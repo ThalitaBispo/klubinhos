@@ -18,10 +18,6 @@ interface Post {
   liked?: boolean;
 }
 
-/*interface LikeCount {
-  [postId: number]: number;
-}*/
-
 export function Dashboard() {
   const [postagem, setPostagem] = useState<Post>({ content: '' });
   const [postagens, setPostagens] = useState<Post[]>([]);

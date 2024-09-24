@@ -1,26 +1,31 @@
-import { Link , useNavigate } from 'react-router-dom';
+import { Link  } from 'react-router-dom';
 import styles from './SideBarLeft.module.css';
 import Cookies from 'js-cookie';
 import logo from '../../avatar/logo.jpeg';
 
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
 
-export function SideBarRight() {
+interface Profile {
+    id: string;
+    name: string;
+    last_name: string;
+    club_name: string; // Adicionei club_name se for necessário
+    imagem?: string; // Adicionei imagem como opcional, caso não exista
+}
 
-    const navigate = useNavigate();
+export function SideBarRight() {
     const handleLogout = () => {
         // Remova os cookies quando o usuário faz logout
         Cookies.remove('user_id');
         Cookies.remove('token');
         Cookies.remove('club_id');
         Cookies.remove('role');
-        // navigate('/');
       };
 
     //get
-    const [profile, setProfile] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const [profile, setProfile] = useState<Profile[]>([]);
+    const [, setLoading] = useState(true);
     const user_id = Cookies.get('user_id');
 
     useEffect(() => {
