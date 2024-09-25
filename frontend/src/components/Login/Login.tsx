@@ -17,6 +17,9 @@ export function Login() {
   });
   const [, setStatus] = useState<string>('');
 
+  // Use a variável de ambiente para a URL da API
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
+
   async function gravar(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
@@ -28,7 +31,7 @@ export function Login() {
 
     try {
       const response = await axios.post(
-        'http://127.0.0.1:8000/api/login',
+        `${API_URL}/api/login`, // Usando a variável de ambiente
         {
           email: login.email,
           password: login.password,
