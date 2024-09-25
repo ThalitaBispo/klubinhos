@@ -17,8 +17,8 @@ export function Login() {
   });
   const [, setStatus] = useState<string>('');
 
-  // Use a variável de ambiente para a URL da API
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
+  // Usar a variável de ambiente do Create React App
+  const API_URL = process.env.REACT_APP_API_URL || 'http://127.0.0.1:8000';
 
   async function gravar(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
