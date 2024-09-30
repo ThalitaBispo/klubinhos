@@ -15,7 +15,13 @@
     }
 
     .userProfile {
-      margin-top: 16rem;
+      margin-top: 0.6rem;
+      margin-bottom: 0.6rem;
+      margin-left: -3.75rem;
+    }
+
+    .userProfile a {
+      margin: 1rem;
     }
 
     .sideBarLeft {
@@ -23,6 +29,17 @@
       display: flex;
       justify-content: center;
       align-items: center;
+      max-height: 100vh; /* Garante que o menu não ultrapasse a altura da tela */
+      overflow-y: hidden; /* Oculta a rolagem até que o mouse entre */
+      scrollbar-width: none; /* Firefox: esconde a barra de rolagem */
+      overflow-y: hidden; /* Mude isso */
+      height: auto; /* Adicione isso para permitir a expansão */
+      max-height: 100vh; /* Ou ajuste conforme necessário */
+    }
+
+    /* Webkit (Chrome, Safari) */
+    .sideBarLeft::-webkit-scrollbar {
+      display: none;
     }
 
     @media screen and (max-width: 767px) {
